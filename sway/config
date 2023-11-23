@@ -89,7 +89,14 @@ focus output HDMI-A-1
     bindsym $mod+t exec $term; exec notify-send done -t 2000
 
     # Launch app with 1 letter
-    bindsym $alt_gr+w exec ~/Dropbox/Scripts/./current_wifi_speed.sh; exec ~/Dropbox/Scripts/delay.sh && swaymsg floating enable && swaymsg resize set 800 100 && swaymsg move absolute position 50 950
+    bindsym $alt_gr+w \
+        exec ~/Dropbox/Scripts/./current_wifi_speed.sh; \
+        exec ~/Dropbox/Scripts/delay.sh && \
+        swaymsg floating enable && \
+        swaymsg resize set 800 100 && \
+        swaymsg move absolute position 50 950 && \
+        exec ydotool key 125:1 57:1 57:0 125:0   ;move focus from float window to main window (Super-SPC)
+
     bindsym $alt_gr+c exec ~/Dropbox/Scripts/./current_time.sh
     bindsym $alt_gr+d exec thunar
     bindsym $alt_gr+t exec "flatpak run io.missioncenter.MissionCenter"
