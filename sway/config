@@ -1,0 +1,375 @@
+# Default config for sway
+#
+# Copy this to ~/.config/sway/config and edit it to your liking.
+#
+# Read `man 5 sway` for a complete reference.
+
+### Variables
+#
+# Logo key. Use Mod1 for Alt.
+set $mod Mod4
+# AltGr key.
+set $alt_gr Mod5
+# Home row direction keys, like vim
+set $left h
+set $down j
+set $up k
+set $right l
+# Your preferred terminal emulator
+# Recommends: foot
+set $term foot
+# Your preferred application launcher
+# Note: pass the final command to swaymsg so that the resulting window can be opened
+# on the original workspace that the command was run on.
+# Recommends: rofi-wayland
+set $rofi_cmd rofi \
+        -terminal '$term'
+# Shows a combined list of the applications with desktop files and
+# executables from PATH.
+# TODO: add window with the next release of rofi-wayland
+## DEPRECATED, use rofi launcher type7 instead
+#set $menu $rofi_cmd -show combi -combi-modes drun#run -modes combi -show-icons
+#set $window $rofi_cmd -show window -show-icons -matching regex -filter '^(?!.*(?:Clock|hello-tauri))' -no-tokenize
+
+### Output configuration
+#
+# Default wShiftallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
+# Requires: desktop-backgrounds-compat, swaybg
+# output * bg /usr/share/backgrounds/default.png fill
+output HDMI-A-1 bg /home/mars/Dropbox/wallpapers/wallpaper5.png fill
+output eDP-1 bg /home/mars/Dropbox/wallpapers/gnulinux.png fill
+#
+### Multihead:
+#
+# Get the default outputs: swaymsg -t get_outputs
+output HDMI-A-1 pos 0 0 res 2560x1080@75Hz
+output eDP-1 scale 1.3
+output eDP-1 pos 2560 0 modeline 156.00 1920 2040 2240 2560 980 983 993 1017 -hsync +vsync
+
+focus output HDMI-A-1
+# output eDP-1 pos 2560 0 res 1920x1080
+#
+# You can get the names of your outputs by running: swaymsg -t get_outputs
+
+### Idle configuration
+#
+# Example configuration:
+#
+# Not working!, but the toggle white eyes button working fine
+# exec swayidle -w \
+    bindsym $alt_gr+l exec swaylock -f -c 000000
+#           timeout 300 'swaylock -f -c 000000' \
+#           timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+#           before-sleep 'swaylock -f -c 000000'
+#
+# This will lock your screen after 300 seconds of inactivity, then turn off
+# your displays after another 300 seconds, and turn your screens back on when
+# resumed. It will also lock your screen before your computer goes to sleep.
+
+### Input configuration
+#
+# Example configuration:
+#
+#   input "2:14:SynPS/2_Synaptics_TouchPad" {
+#       dwt enabled
+#       tap enabled
+#       natural_scroll enabled
+#       middle_emulation enabled
+#   }
+#
+# You can get the names of your inputs by running: swaymsg -t get_inputs
+# Read `man 5 sway-input` for more information about this section.
+
+### Key bindings
+#
+# Basics:
+#
+    # Start a terminal
+    bindsym $mod+Return exec $term
+    bindsym $mod+t exec $term; exec notify-send done -t 2000
+
+    # Launch app with 1 letter
+    bindsym $alt_gr+w exec ~/Dropbox/Scripts/./current_wifi_speed.sh; exec ~/Dropbox/Scripts/delay.sh && swaymsg floating enable && swaymsg resize set 800 100 && swaymsg move absolute position 50 950
+    bindsym $alt_gr+c exec ~/Dropbox/Scripts/./current_time.sh
+    bindsym $alt_gr+d exec thunar
+    bindsym $alt_gr+t exec "flatpak run io.missioncenter.MissionCenter"
+    bindsym $alt_gr+v exec "flatpak run org.videolan.VLC ~/storage/Music/with-lyric"
+    bindsym $alt_gr+Shift+v exec "flatpak run org.videolan.VLC /home/mars/Downloads/music"
+
+    # Media keys # cat ~/.Xmodmap too see buttons name
+    bindsym $alt_gr+space exec playerctl play-pause
+    bindsym $alt_gr+period exec playerctl next
+    bindsym $alt_gr+comma exec playerctl previous
+
+    # Toggle sink output
+    bindsym $alt_gr+m exec foot sh -c "sleep 1 && ydotool type Gdq & toolbox run -c cli-tools ncpamixer -t o"
+
+    bindsym $alt_gr+Shift+m exec foot sh -c "sleep 1 && ydotool type Gkdq & toolbox run -c cli-tools ncpamixer -t o"
+
+    # Volume keys
+    set $volume_helper_cmd /usr/libexec/sway/volume-helper
+    # bindsym $alt_gr+Shift+period exec $volume_helper_cmd --limit "$volume_limit" --increase "$volume_step"
+    bindsym $alt_gr+Shift+period exec $volume_helper_cmd --limit "$volume_limit" --increase 2
+    bindsym $alt_gr+Shift+comma exec $volume_helper_cmd --limit "$volume_limit" --decrease 2
+    bindsym $alt_gr+slash exec pactl set-sink-mute @DEFAULT_SINK@ toggle && $volume_helper_cmd
+    bindsym $alt_gr+Shift+slash exec pactl set-source-mute @DEFAULT_SOURCE@ toggle; exec mute_status=$(pactl list sources | grep -A 10 'Source #' | grep 'Mute' | awk '{print $2}') && notify-send "MIC Mute Status" "$mute_status" -t 1000
+
+    # Kill focused window
+    bindsym $mod+Shift+q kill
+
+    # Start your launcher
+    set $rofi-drun /home/mars/.config/rofi/launchers/type-7/launcher-drun.sh
+    set $rofi-file /home/mars/.config/rofi/launchers/type-7/launcher-file.sh
+    set $rofi-window /home/mars/.config/rofi/launchers/type-7/launcher-window.sh
+    set $rofi-run /home/mars/.config/rofi/launchers/type-7/launcher-run.sh
+    bindsym $mod+d exec $rofi-drun
+    bindsym $mod+Shift+d exec $rofi-file
+    bindsym $mod+Ctrl+d exec $rofi-window
+    bindsym $mod+Shift+Ctrl+d exec $rofi-run
+
+    # Drag floating windows by holding down $mod and left mouse button.
+    # Resize them with right mouse button + $mod.
+    # Despite the name, also works for non-floating windows.
+    # Change normal to inverse to use left mouse button for resizing and right
+    # mouse button for dragging.
+    floating_modifier $mod normal
+
+    # Reload the configuration file
+    bindsym $mod+Shift+c reload
+
+    # Exit sway (logs you out of your Wayland session)
+    bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+#
+# Moving around:
+#
+    # Move your focus around
+    bindsym $mod+$left focus left
+    bindsym $mod+$down focus down
+    bindsym $mod+$up focus up
+    bindsym $mod+$right focus right
+    # Or use $mod+[up|down|left|right]
+    bindsym $mod+Left focus left
+    bindsym $mod+Down focus down
+    bindsym $mod+Up focus up
+    bindsym $mod+Right focus right
+
+    # Move the focused window with the same, but add Shift
+    bindsym $mod+Shift+$left move left
+    bindsym $mod+Shift+$down move down
+    bindsym $mod+Shift+$up move up
+    bindsym $mod+Shift+$right move right
+    # Ditto, with arrow keys
+    bindsym $mod+Shift+Left move left
+    bindsym $mod+Shift+Down move down
+    bindsym $mod+Shift+Up move up
+    bindsym $mod+Shift+Right move right
+#
+# Workspaces:
+#
+    # Switch to workspace
+    bindsym $mod+1 workspace number 1; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-1.png
+    bindsym $mod+2 workspace number 2; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-2.png
+    bindsym $mod+3 workspace number 3; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-3.png
+    bindsym $mod+4 workspace number 4; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-4.png
+    bindsym $mod+5 workspace number 5; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-5.png
+    bindsym $mod+6 workspace number 6; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-6.png
+    bindsym $mod+7 workspace number 7; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-7.png
+    bindsym $mod+8 workspace number 8; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-8.png
+    bindsym $mod+9 workspace number 9; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-9.png
+    bindsym $mod+0 workspace number 10; exec notify-send " " -t 500 -i /home/mars/Pictures/icon-number-folder/number-10.png
+    # Move focused container to workspace
+    bindsym $mod+Shift+1 move container to workspace number 1
+    bindsym $mod+Shift+2 move container to workspace number 2
+    bindsym $mod+Shift+3 move container to workspace number 3
+    bindsym $mod+Shift+4 move container to workspace number 4
+    bindsym $mod+Shift+5 move container to workspace number 5
+    bindsym $mod+Shift+6 move container to workspace number 6
+    bindsym $mod+Shift+7 move container to workspace number 7
+    bindsym $mod+Shift+8 move container to workspace number 8
+    bindsym $mod+Shift+9 move container to workspace number 9
+    bindsym $mod+Shift+0 move container to workspace number 10
+    # Note: workspaces can have any name you want, not just numbers.
+    # We just use 1-10 as the default.
+#
+# Keyboard layout:
+#
+input "type:keyboard" {
+    # man 7 xkeyboard-config (search OPTIONS)
+    xkb_options ctrl:nocaps,grp:alt_altgr_toggle
+}
+#
+# Layout stuff:
+#
+    # You can "split" the current object of your focus with
+    # $mod+b or $mod+v, for horizontal and vertical splits
+    # respectively.
+    bindsym $mod+b splith
+    bindsym $mod+v splitv
+
+    # Switch the current container between different layout styles
+    bindsym $mod+s layout stacking
+    bindsym $mod+w layout tabbed
+    bindsym $mod+e layout toggle split
+
+    # Make the current focus fullscreen
+    bindsym $mod+f fullscreen
+
+    # Toggle the current focus between tiling and floating mode
+    bindsym $mod+Shift+space floating toggle
+    # Only work for floating window
+    bindsym $mod+o sticky toggle
+
+    # Swap focus between the tiling area and the floating area
+    bindsym $mod+space focus mode_toggle
+
+    # Move focus to the parent container
+    bindsym $mod+a focus parent
+#
+# Scratchpad:
+#
+    # Sway has a "scratchpad", which is a bag of holding for windows.
+    # You can send windows there and get them back later.
+
+    # Move the currently focused window to the scratchpad
+    bindsym $mod+Shift+minus move scratchpad
+
+    # Show the next scratchpad window or hide the focused scratchpad window.
+    # If there are multiple scratchpad windows, this command cycles through them.
+    bindsym $mod+minus scratchpad show
+#
+# Commands: border
+#
+#titlebar_border_thickness 3
+default_border pixel 2
+smart_gaps on
+smart_borders on
+gaps inner 6
+
+#set $border_focused #eff0f1
+set $border_focused #000000
+set $border_unfocused #bdc3c7
+set $focused_background #ff80ec
+set $unfocused_background #bdc3c7
+set $font_color #352f2b
+
+client.focused $border_focused $focused_background $font_color
+# client.unfocused $border_unfocused $unfocused_background $font_color
+# client.focused_inactive $border_unfocused $unfocused_background $font_color
+#
+# Resizing containers:
+#
+mode "resize" {
+    # left will shrink the containers width
+    # right will grow the containers width
+    # up will shrink the containers height
+    # down will grow the containers height
+    bindsym $left resize shrink width 30px
+    bindsym $down resize grow height 30px
+    bindsym $up resize shrink height 30px
+    bindsym $right resize grow width 30px
+
+    # Ditto, with arrow keys
+    bindsym Left resize shrink width 30px
+    bindsym Down resize grow height 30px
+    bindsym Up resize shrink height 30px
+    bindsym Right resize grow width 30px
+
+    # Return to default mode
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+#
+# Screenshot
+#
+bindsym {
+    # Capture the currently active output
+    $alt_gr+p   exec grimshot save output
+    # Capture the currently active window
+    $alt_gr+Shift+p   exec grimshot save active
+    # Select and capture a custom rectangular area
+    $alt_gr+Ctrl+p   exec grimshot save area
+}
+
+# Include configs from 3 locations:
+#  - /usr/share/sway/config.d
+#  - /etc/sway/config.d
+#  - $XDG_CONFIG_HOME/sway/config.d ($HOME/.config/sway/config.d)
+#
+# If multiple directories contain the files with the same name, the later
+# directory takes precedence; `$XDG_CONFIG_HOME/sway/config.d/20-swayidle.conf`
+# will always be loaded instead of `/usr/share/sway/config.d/20-swayidle.conf`
+# or `/etc/sway/config.d/20-swayidle.conf`
+#
+# This mechanism permits overriding our default configuration per-system
+# (/etc) or per-user ($XDG_CONFIG_HOME) basis. Just create the file you
+# want to modify/override in the higher-level directory.
+#
+# For example, to disable the default bar from Fedora configs, you'll need to
+#     $ echo -n > "$HOME/.config/sway/config.d/90-bar.conf"
+# IDK mode toggle still not working
+#
+# Swaybar: waybar
+#
+bindsym $mod+m exec killall -q waybar; exec ~/Dropbox/Scripts/delay.sh && sway '[app_id="hello-tauri"]' move absolute position 830 1050 && sway '[class="Clock in Task"]' move absolute position 1110 1050
+bindsym $mod+Shift+m exec waybar; exec sway '[app_id="hello-tauri"]' move absolute position 830 1020; exec sway '[class="Clock in Task"]' move absolute position 1110 1020
+# bindsym $mod+Shift+m exec waybar; exec killall hello-tauri; exec toolbox run -c tauri-rust /run/media/mars/4952045c-daeb-4253-b18c-e79f4fa83eb9/Projects/practices/rust/pray-timer-tauri/src-tauri/target/release/./hello-tauri
+# for testing | swaymsg -t get_tree 
+
+# bindsym $mod+p exec killall hello-tauri; exec toolbox run -c tauri-rust /run/media/mars/4952045c-daeb-4253-b18c-e79f4fa83eb9/Projects/practices/rust/pray-timer-tauri/src-tauri/target/release/./hello-tauri
+## Delaying not work
+# bindsym $mod+p exec notify-send test -t 1000; exec sleep 3s; exec notify-send done -t 1000
+# bindsym $mod+m exec notify-send ok
+#
+# Note the quoting, the $() and the arguments quoting. All the parts are equally
+# important to make the magic work. And if you want to learn the secret behind
+# the trick, it's all in the `wordexp(3)`.
+#
+include '$(/usr/libexec/sway/layered-include "/usr/share/sway/config.d/*.conf" "/etc/sway/config.d/*.conf" "${XDG_CONFIG_HOME:-$HOME/.config}/sway/config.d/*.conf")'
+
+for_window [app_id="hello-tauri"] {
+  floating true; 
+  sticky enable; 
+  move absolute position 830 1050;
+} 
+no_focus [app_id="hello-tauri"]
+
+for_window [class="Clock in Task"] {
+  floating true; 
+  sticky enable; 
+  move absolute position 1110 1020;
+} 
+no_focus [class="Clock in Task"]
+
+## example
+# exec program-here && sway '[app_id="program-here"]' move container to workspace 10
+# assign [class="Firefox"] workspace 6
+assign [class="vlc"] workspace 5
+assign [class="Emacs"] workspace 1
+assign [app_id="com.transmissionbt.Transmission._40_598536"] workspace 6
+
+
+## TODO: other wayland apps
+# https://arewewaylandyet.com/
+
+## TODO: 30 handy bash aliases
+# https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
+
+## TODO: learn lazyvim
+# https://www.lazyvim.org/keymaps
+
+# my_pet using too much CPU and broken in swaywm
+# for_window [class="my_pet"] {
+#   floating true; 
+#   sticky enable; 
+#   #move absolute position 830 850;
+# }
+
+exec "~/.config/autostart/launch-gammastep.sh"
+exec toolbox run -c dropbox maestral start &
+exec toolbox run -c tauri-rust /run/media/mars/4952045c-daeb-4253-b18c-e79f4fa83eb9/Projects/practices/rust/pray-timer-tauri/src-tauri/target/release/./hello-tauri &
+exec /run/media/mars/8afd0fc4-d63d-4b39-bb10-47875f67c4db/mnt/storage/mnt/storage/Applications/./clock-in-task-fyne-v1 &
+exec flatpak run org.gnu.emacs &
+exec flatpak run com.transmissionbt.Transmission &
+exec pkill swayidle &
